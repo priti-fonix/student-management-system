@@ -1,6 +1,7 @@
 const User = require("../models/UserModel");
 const { sendOtpEmail } = require("../utils/mailer");
 require("dotenv").config();
+const { hashPass, comparePass } = require("../utils/bcrypt");
 
 async function requestOTP(req, res) {
   const { email } = req.body;
@@ -82,9 +83,10 @@ async function registerUser(req, res) {
     //     message: "verified successfully",
     //   });
     // }
+    const hashpassword = hashPass(password);
     existUser.fullname = fullname;
     existUser.role = role;
-    existUser.password = password;
+    existUser.password = hashpassword;
 
     return res
       .status(200)
@@ -99,4 +101,41 @@ async function registerUser(req, res) {
   }
 }
 
-module.exports = { requestOTP, verifyOTP, registerUser };
+async function loginUser(req, res) {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "email and password is required",
+      });
+    }
+    const existUser = await User.findOne({ where: { email } });
+    if (!existUser.verified) {
+      return res.status(404).json({
+        success: false,
+        message: "user is not verified , verify first",
+      });
+    }
+    const match = comparePass(password, existUser.password);
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: "password is incorrect",
+      });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "loginsuccessfully" });
+  } catch (err) {
+    console.log("an error occured");
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
+module.exports = { requestOTP, verifyOTP, registerUser, loginUser };
