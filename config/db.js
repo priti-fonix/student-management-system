@@ -1,24 +1,32 @@
+// config/db.js (example)
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
-// Using PostgreSQL with environment variables
-const sequelize = new Sequelize(process.env.DB_URL, {
-  logging: false, // Set to console.log to see SQL queries
-});
+const sequelize = new Sequelize(
+  process.env.DB_NAME || "collegedb",
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: process.env.DB_HOST || "localhost",
+    dialect: "postgres",
+    logging: false,
+  }
+);
 
 async function connectdb() {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ force: true });
+    // avoid force: true in production; use alter:true or none
+    await sequelize.sync({ alter: true });
     console.log("Connection has been established successfully.");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
   }
 }
 
+module.exports = { connectdb, sequelize };
 // console.log("All models were synchronized successfully.");
 
-module.exports = { connectdb, sequelize };
 // Example for postgres
 
 // Option 2: Passing parameters separately (sqlite)

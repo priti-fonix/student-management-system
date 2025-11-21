@@ -1,13 +1,16 @@
 const bcrypt = require("bcrypt");
+require("dotenv").config();
 
-function hashPass(password) {
-  const salt = bcrypt.genSalt(10);
-  const hashedPassword = bcrypt.hash(password, salt);
+async function hashPass(password) {
+  const rounds = parseInt(process.env.SALT_ROUNDS, 10) || 10;
+  const salt = await bcrypt.genSalt(rounds);
+  const hashedPassword = await bcrypt.hash(password, salt);
   return hashedPassword;
 }
 
-function comparePass(password, hashedpassword) {
-  const match = bcrypt.compare(password, hashedpassword);
+async function comparePass(password, hashedpassword) {
+  if (!password || !hashedpassword) return false;
+  const match = await bcrypt.compare(password, hashedpassword);
   return match;
 }
 

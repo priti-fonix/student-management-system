@@ -5,6 +5,7 @@ const app = express();
 const { connectdb } = require("./config/db");
 const { sendOtpEmail } = require("./utils/mailer");
 const authRoute = require("./routers/authRoute");
+const studentRoute = require("./routers/studentRoute");
 require("dotenv").config();
 
 app.use(express.json());
@@ -22,6 +23,7 @@ app.get("/home", (req, res) => {
 });
 
 app.use("/api/auth", authRoute);
+app.use("/api/students", studentRoute);
 app.listen(process.env.PORT, () => {
   console.log(`server is running on http://localhost:5001`);
 });

@@ -1,14 +1,15 @@
 const { Sequelize, Op, Model, DataTypes } = require("sequelize");
 const { connectdb, sequelize } = require("../config/db");
 
-const User = sequelize.define(
-  "User",
+const users = sequelize.define(
+  "users",
   {
     fullname: {
       type: DataTypes.STRING,
     },
     role: {
       type: DataTypes.STRING,
+      enum: ["student", "tutor", "admin"],
     },
     email: {
       type: DataTypes.STRING,
@@ -22,7 +23,7 @@ const User = sequelize.define(
       type: DataTypes.STRING,
     },
   },
-  { sequelize, modelName: "User", timestamps: true, createdAt: false }
+  { sequelize, modelName: "users", timestamps: true, createdAt: false }
 );
 
-module.exports = User;
+module.exports = users;

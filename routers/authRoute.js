@@ -1,7 +1,7 @@
 const express = require("express");
 
 const router = express.Router();
-const { isAdmin, isStudent, isTutor } = require("../middlewares/authHandler");
+const { isAdmin, isStudent, isTutor } = require("../middlewares/acessHandler");
 
 const {
   requestOTP,
@@ -13,6 +13,6 @@ const {
 router.post("/request-otp", requestOTP);
 router.post("/verify-otp", verifyOTP);
 router.post("/register", registerUser);
-router.post("/ login", loginUser);
+router.post("/login", loginUser);
 
 module.exports = router;

@@ -1,5 +1,9 @@
 const brypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
+const createToken = (userId) =>
+  jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 function isAuth(req, res) {
   try {
@@ -30,4 +34,4 @@ function isAuth(req, res) {
   }
 }
 
-module.exports = isAuth;
+module.exports = { createToken, isAuth };

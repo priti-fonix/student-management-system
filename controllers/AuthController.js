@@ -2,6 +2,24 @@ const User = require("../models/UserModel");
 const { sendOtpEmail } = require("../utils/mailer");
 require("dotenv").config();
 const { hashPass, comparePass } = require("../utils/bcrypt");
+const { createToken } = require("../middlewares/authMiddleware");
+
+const { Op } = require("sequelize");
+
+async function getall() {
+  return await User.findAll({ where: {} });
+}
+
+async function ceateUser(data) {
+  return await User.create(data);
+}
+
+async function getByEmail(email) {
+  return await User.findByPk(email);
+}
+async function getByrole(userrole) {
+  return await User.findAll({ where: { role: userrole } });
+}
 
 async function requestOTP(req, res) {
   const { email } = req.body;
@@ -41,7 +59,7 @@ async function requestOTP(req, res) {
 async function verifyOTP(req, res) {
   const { email, otp } = req.body;
   try {
-    const existUser = await User.findOne({ where: { email } });
+    const existUser = await getByEmail(email);
     if (!existUser) {
       return res.status(404).json({
         success: false,
@@ -69,7 +87,7 @@ async function verifyOTP(req, res) {
 async function registerUser(req, res) {
   const { fullname, role, email, password } = req.body;
   try {
-    const existUser = await User.findOne({ where: { email } });
+    const existUser = await getByEmail(email);
     if (!existUser) {
       return res.status(404).json({
         success: false,
@@ -77,20 +95,16 @@ async function registerUser(req, res) {
       });
     }
 
-    // if (existUser.otp === otp) {
-    //   return res.status(200).json({
-    //     success: true,
-    //     message: "verified successfully",
-    //   });
-    // }
-    const hashpassword = hashPass(password);
+    const hashpassword = await hashPass(password);
     existUser.fullname = fullname;
     existUser.role = role;
     existUser.password = hashpassword;
+    await existUser.save();
 
-    return res
-      .status(200)
-      .json({ success: true, message: "registered successfully" });
+    return res.status(200).json({
+      success: true,
+      message: "registered successfully",
+    });
   } catch (err) {
     console.log("an error occured");
 
@@ -110,30 +124,33 @@ async function loginUser(req, res) {
         message: "email and password is required",
       });
     }
-    const existUser = await User.findOne({ where: { email } });
-    if (!existUser.verified) {
+    const existUser = await getByEmail(email);
+    if (!existUser || !existUser.password) {
       return res.status(404).json({
         success: false,
-        message: "user is not verified , verify first",
+        message: "User not found or not registered",
       });
     }
-    const match = comparePass(password, existUser.password);
+
+    const match = await comparePass(password, existUser.password);
     if (!match) {
-      return res.status(404).json({
+      return res.status(401).json({
         success: false,
         message: "password is incorrect",
       });
     }
 
+    const token = createToken(existUser.id);
+
     return res
       .status(200)
-      .json({ success: true, message: "loginsuccessfully" });
+      .json({ success: true, message: "loginsuccessfully", token: token });
   } catch (err) {
     console.log("an error occured");
 
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: `internal server error ${err.message}`,
     });
   }
 }

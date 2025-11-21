@@ -43,7 +43,19 @@ async function sendOtpEmail(recipientEmail) {
   }
 }
 
+async function sendWelcomeEmail(email, fullname) {
+  const mailOptions = {
+    from: process.env.USER_EMAIL,
+    to: email,
+    subject: "Welcome to our platform 🎉",
+    html: `<p>Hello <b>${fullname}</b>,<br/>Welcome to our application!</p>`,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
 module.exports = {
   generateOTP,
   sendOtpEmail,
+  sendWelcomeEmail,
 };
